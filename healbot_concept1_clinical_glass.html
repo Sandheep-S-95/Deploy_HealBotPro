@@ -1,0 +1,111 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+.hb-wrap{background:#060b18;border-radius:12px;padding:0;overflow:hidden;font-family:'Outfit',sans-serif;min-height:520px;display:flex;flex-direction:column}
+.hb-topbar{background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(99,210,255,0.12);padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
+.hb-logo{display:flex;align-items:center;gap:8px}
+.hb-logo-dot{width:8px;height:8px;border-radius:50%;background:#3dd8ff;box-shadow:0 0 8px #3dd8ff}
+.hb-logo-text{font-size:13px;font-weight:600;color:#e0f7ff;letter-spacing:0.08em;text-transform:uppercase}
+.hb-stats{display:flex;gap:16px}
+.hb-stat{font-size:11px;color:rgba(150,220,255,0.6);font-family:'JetBrains Mono',monospace}
+.hb-stat span{color:#3dd8ff}
+.hb-main{display:flex;flex:1}
+.hb-sidebar{width:260px;border-right:1px solid rgba(99,210,255,0.08);padding:16px;display:flex;flex-direction:column;gap:12px}
+.hb-patient-card{background:rgba(61,216,255,0.05);border:1px solid rgba(61,216,255,0.15);border-radius:8px;padding:12px}
+.hb-patient-name{font-size:14px;font-weight:600;color:#e0f7ff}
+.hb-patient-meta{font-size:11px;color:rgba(150,220,255,0.5);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.hb-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#3dd8ff;background:rgba(61,216,255,0.1);border:1px solid rgba(61,216,255,0.2);border-radius:4px;padding:2px 7px;margin-top:6px}
+.hb-section-label{font-size:10px;font-weight:500;color:rgba(150,220,255,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-top:4px}
+.hb-textarea{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(99,210,255,0.12);border-radius:6px;color:#c8eeff;font-size:12px;font-family:'Outfit',sans-serif;padding:10px;resize:none;height:80px;outline:none}
+.hb-run-btn{width:100%;padding:10px;background:rgba(61,216,255,0.12);border:1px solid rgba(61,216,255,0.3);border-radius:6px;color:#3dd8ff;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase}
+.hb-pipeline{display:flex;flex-direction:column;gap:6px}
+.hb-step{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}
+.hb-step.done{border-color:rgba(61,216,255,0.2);background:rgba(61,216,255,0.05)}
+.hb-step.active{border-color:rgba(61,216,255,0.35);background:rgba(61,216,255,0.08)}
+.hb-step-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);flex-shrink:0}
+.hb-step.done .hb-step-dot{background:#3dd8ff}
+.hb-step.active .hb-step-dot{background:#3dd8ff;box-shadow:0 0 6px #3dd8ff}
+.hb-step-text{font-size:11px;color:rgba(150,220,255,0.5);font-family:'JetBrains Mono',monospace}
+.hb-step.done .hb-step-text,.hb-step.active .hb-step-text{color:#a8e6ff}
+.hb-step-tag{margin-left:auto;font-size:9px;background:rgba(61,216,255,0.1);color:#3dd8ff;border-radius:3px;padding:1px 5px;font-family:'JetBrains Mono',monospace}
+.hb-panel{flex:1;padding:20px;display:flex;flex-direction:column;gap:14px}
+.hb-panel-header{display:flex;align-items:center;gap:8px}
+.hb-panel-title{font-size:13px;font-weight:500;color:rgba(150,220,255,0.6);letter-spacing:0.08em;text-transform:uppercase}
+.hb-tags-row{display:flex;flex-wrap:wrap;gap:6px}
+.hb-tag-amber{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);color:#fbbf24;font-size:11px;border-radius:4px;padding:3px 9px;font-family:'JetBrains Mono',monospace}
+.hb-tag-blue{background:rgba(99,179,237,0.1);border:1px solid rgba(99,179,237,0.25);color:#63b3ed;font-size:11px;border-radius:4px;padding:3px 9px;font-family:'JetBrains Mono',monospace}
+.hb-report{background:rgba(255,255,255,0.025);border:1px solid rgba(99,210,255,0.08);border-radius:8px;padding:14px;flex:1}
+.hb-report-section{margin-bottom:12px}
+.hb-report-h{font-size:11px;font-weight:600;color:rgba(150,220,255,0.5);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.hb-report-p{font-size:12px;color:rgba(200,238,255,0.7);line-height:1.7}
+.hb-divider{border:none;border-top:1px solid rgba(99,210,255,0.07);margin:10px 0}
+</style>
+<div class="hb-wrap">
+  <div class="hb-topbar">
+    <div class="hb-logo">
+      <div class="hb-logo-dot"></div>
+      <span class="hb-logo-text">HealBot Pro</span>
+    </div>
+    <div class="hb-stats">
+      <span class="hb-stat">VECTORS <span>284,312</span></span>
+      <span class="hb-stat">NODES <span>18,402</span></span>
+      <span class="hb-stat">STATUS <span>READY</span></span>
+    </div>
+  </div>
+  <div class="hb-main">
+    <div class="hb-sidebar">
+      <div class="hb-patient-card">
+        <div class="hb-patient-name">Sarah K., 34F</div>
+        <div class="hb-patient-meta">ID: PT-00291 · EHR LINKED</div>
+        <div class="hb-badge">● Records found</div>
+      </div>
+      <div class="hb-section-label">Symptom Input</div>
+      <textarea class="hb-textarea" placeholder="Describe the current complaint...">Persistent headache, fatigue, and mild fever for 3 days. No known allergies.</textarea>
+      <button class="hb-run-btn">▶ Run Pipeline</button>
+      <div class="hb-section-label">Pipeline</div>
+      <div class="hb-pipeline">
+        <div class="hb-step done"><div class="hb-step-dot"></div><span class="hb-step-text">Symptom Extraction</span><span class="hb-step-tag">DONE</span></div>
+        <div class="hb-step done"><div class="hb-step-dot"></div><span class="hb-step-text">Graph Traversal</span><span class="hb-step-tag">DONE</span></div>
+        <div class="hb-step active"><div class="hb-step-dot"></div><span class="hb-step-text">Medical RAG</span><span class="hb-step-tag">ACTIVE</span></div>
+        <div class="hb-step"><div class="hb-step-dot"></div><span class="hb-step-text">Report Synthesis</span><span class="hb-step-tag">WAIT</span></div>
+      </div>
+    </div>
+    <div class="hb-panel">
+      <div class="hb-panel-header"><span class="hb-panel-title">Consultation Report</span></div>
+      <div>
+        <div class="hb-section-label" style="margin-bottom:6px">Extracted Symptoms</div>
+        <div class="hb-tags-row">
+          <span class="hb-tag-amber">headache</span>
+          <span class="hb-tag-amber">fatigue</span>
+          <span class="hb-tag-amber">mild_fever</span>
+          <span class="hb-tag-amber">duration_3d</span>
+        </div>
+      </div>
+      <div>
+        <div class="hb-section-label" style="margin-bottom:6px">Graph-Matched Conditions</div>
+        <div class="hb-tags-row">
+          <span class="hb-tag-blue">viral_infection</span>
+          <span class="hb-tag-blue">tension_headache</span>
+          <span class="hb-tag-blue">dehydration</span>
+        </div>
+      </div>
+      <div class="hb-report">
+        <div class="hb-report-section">
+          <div class="hb-report-h">Assessment</div>
+          <div class="hb-report-p">Symptom cluster consistent with mild viral syndrome. Triad of headache, fatigue, and low-grade fever over 72hrs suggests systemic involvement without acute red flags.</div>
+        </div>
+        <hr class="hb-divider">
+        <div class="hb-report-section">
+          <div class="hb-report-h">Recommendations</div>
+          <div class="hb-report-p">Rest, adequate hydration (2–3L/day), and OTC antipyretics if temp exceeds 38.5°C. Monitor for escalation of fever or new neurological symptoms. Follow up in 48hrs if not improving.</div>
+        </div>
+        <hr class="hb-divider">
+        <div class="hb-report-section">
+          <div class="hb-report-h">Confidence Score</div>
+          <div class="hb-report-p" style="font-family:'JetBrains Mono',monospace;color:#3dd8ff">0.87 — HIGH · RAG sources: 14 documents</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

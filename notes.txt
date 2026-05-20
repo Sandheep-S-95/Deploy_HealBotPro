@@ -1,0 +1,10 @@
+I need to create a knowledge graph in neo4j  where the nodes are diseases. And the linking from one node to another is based whether current disease can be a symptom of a higher level disease.
+
+EG:  cold -> pneumonia and similiarly could be several levels diasese.
+
+U may refer to the local_medical_terms.csv to create a file of neo4j cypher queries for this graph creation.
+
+The context of the app overall picture:
+The overall purpose of this is to capture disease relationship using the graph and store the info about diseases in a different rag (meaning the local_medical_terms.csv will be stored in a normal free rag in cloud).Then when user says about their symptoms a report is generated for disease possibilities. Could possibly be such graph travesals different symptoms pointing to its on seq of disease starting from symptom to hisher level symptoms. Then we do a 2nd pass to gain info about these diseases (fetched from graph) from the RAG DB.
+
+Then give the report to the doctor which makes the consultaion process easier. Thats y proper creation of graph is needed. I thought of having the entire graph queries stored in a file first and then executed via a python script would be nicer

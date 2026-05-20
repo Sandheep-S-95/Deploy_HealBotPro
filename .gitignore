@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+healbot.db
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+local_medical_terms.csv

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealBot Pro — AI Clinical Decision Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#060b18;font-family:'Space Grotesk',sans-serif;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{
+  position:absolute;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 48px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  background:rgba(6,11,24,0.6);
+  backdrop-filter:blur(12px);
+}
+.nav-logo{font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.03em}
+.nav-logo span{color:#00d4aa}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;transition:color 0.2s}
+.nav-links a:hover{color:rgba(255,255,255,0.8)}
+.nav-cta{
+  background:rgba(0,212,170,0.1);
+  border:1px solid rgba(0,212,170,0.35);
+  color:#00d4aa;font-size:12px;font-weight:600;
+  font-family:'Space Grotesk',sans-serif;
+  padding:9px 20px;border-radius:100px;cursor:pointer;
+  letter-spacing:0.04em;transition:background 0.2s;
+}
+.nav-cta:hover{background:rgba(0,212,170,0.2)}
+
+/* ── GRAPH CANVAS ── */
+#graph-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  z-index:1;
+}
+
+/* ── HERO SECTION ── */
+.hero-section{
+  position:relative;z-index:10;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:120px 48px 80px;
+  text-align:center;
+  pointer-events:none;
+}
+.hero-section > *{pointer-events:auto}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,212,170,0.07);
+  border:1px solid rgba(0,212,170,0.2);
+  border-radius:100px;padding:6px 16px;
+  margin-bottom:28px;
+}
+.eyebrow-dot{
+  width:6px;height:6px;border-radius:50%;background:#00d4aa;
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:0.4;transform:scale(0.7)}
+}
+.eyebrow-text{font-size:11px;color:#00d4aa;letter-spacing:0.12em;text-transform:uppercase;font-weight:500}
+
+h1{
+  font-size:clamp(42px,6vw,76px);
+  font-weight:700;color:#fff;
+  line-height:1.0;letter-spacing:-0.04em;
+  margin-bottom:20px;
+}
+h1 em{font-style:normal;color:#00d4aa}
+
+.hero-sub{
+  font-size:clamp(14px,1.5vw,17px);
+  color:rgba(255,255,255,0.45);
+  max-width:540px;margin:0 auto 36px;
+  line-height:1.7;font-weight:300;
+}
+
+.hero-btns{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:60px}
+.btn-pri{
+  background:#00d4aa;color:#060b18;
+  font-size:14px;font-weight:700;
+  font-family:'Space Grotesk',sans-serif;
+  padding:13px 30px;border-radius:9px;border:none;cursor:pointer;
+  letter-spacing:-0.01em;transition:opacity 0.2s;
+}
+.btn-pri:hover{opacity:0.88}
+.btn-sec{
+  background:transparent;color:rgba(255,255,255,0.55);
+  font-size:14px;font-family:'Space Grotesk',sans-serif;
+  padding:13px 24px;border-radius:9px;
+  border:1px solid rgba(255,255,255,0.1);cursor:pointer;transition:border-color 0.2s,color 0.2s;
+}
+.btn-sec:hover{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.8)}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  display:flex;justify-content:center;gap:0;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;padding:0;overflow:hidden;
+}
+.stat-item{
+  padding:18px 32px;
+  border-right:1px solid rgba(255,255,255,0.06);
+  text-align:center;
+}
+.stat-item:last-child{border-right:none}
+.stat-n{
+  font-size:22px;font-weight:700;color:#fff;
+  font-family:'Space Mono',monospace;letter-spacing:-0.03em;
+  display:block;
+}
+.stat-l{
+  font-size:10px;color:rgba(255,255,255,0.3);
+  text-transform:uppercase;letter-spacing:0.1em;
+  margin-top:3px;display:block;
+}
+
+/* ── PIPELINE STRIP ── */
+.pipeline-strip{
+  position:absolute;bottom:0;left:0;right:0;
+  z-index:10;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid rgba(255,255,255,0.06);
+  background:rgba(6,11,24,0.85);
+  backdrop-filter:blur(16px);
+}
+.pipe-step{
+  padding:18px 22px;
+  border-right:1px solid rgba(255,255,255,0.05);
+  display:flex;align-items:flex-start;gap:12px;
+  transition:background 0.25s;
+  cursor:default;
+}
+.pipe-step:last-child{border-right:none}
+.pipe-step:hover{background:rgba(255,255,255,0.03)}
+.pipe-num{
+  font-size:10px;font-family:'Space Mono',monospace;
+  color:rgba(255,255,255,0.2);flex-shrink:0;margin-top:2px;
+}
+.pipe-body{}
+.pipe-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;letter-spacing:-0.01em}
+.pipe-tech{font-size:10px;font-family:'Space Mono',monospace;margin-bottom:4px}
+.pipe-desc{font-size:11px;color:rgba(255,255,255,0.3);line-height:1.55}
+.step-a .pipe-tech{color:#a78bfa}
+.step-b .pipe-tech{color:#60a5fa}
+.step-c .pipe-tech{color:#f472b6}
+.step-d .pipe-tech{color:#00d4aa}
+.pipe-accent{height:2px;margin-top:10px;border-radius:1px;width:0;transition:width 0.6s ease}
+.step-a .pipe-accent{background:#a78bfa}
+.step-b .pipe-accent{background:#60a5fa}
+.step-c .pipe-accent{background:#f472b6}
+.step-d .pipe-accent{background:#00d4aa}
+.pipe-step:hover .pipe-accent{width:100%}
+
+/* ── TOOLTIP ── */
+#tooltip{
+  position:absolute;
+  background:#0d1526;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;padding:10px 14px;
+  pointer-events:none;font-size:11px;color:#fff;
+  font-family:'Space Mono',monospace;white-space:nowrap;
+  opacity:0;transition:opacity 0.15s;z-index:30;
+}
+#tooltip .tt-type{font-size:9px;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.1em}
+#tooltip .tt-name{font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;margin-bottom:4px}
+#tooltip .tt-conn{font-size:10px;opacity:0.45}
+
+/* ── LEGEND ── */
+.legend{
+  position:absolute;bottom:100px;right:32px;
+  z-index:15;display:flex;flex-direction:column;gap:7px;
+  background:rgba(6,11,24,0.7);border:1px solid rgba(255,255,255,0.07);
+  border-radius:8px;padding:12px 14px;
+  backdrop-filter:blur(8px);
+}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,0.4)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<canvas id="graph-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">Heal<span>Bot</span> Pro</div>
+  <div class="nav-links">
+    <a href="#">How it works</a>
+    <a href="#">For clinics</a>
+    <a href="#">Research</a>
+    <a href="#">Docs</a>
+  </div>
+  <button class="nav-cta">Request Access</button>
+</nav>
+
+<div class="hero-section">
+  <div class="eyebrow">
+    <div class="eyebrow-dot"></div>
+    <span class="eyebrow-text">AI Clinical Decision Support · GraphRAG</span>
+  </div>
+
+  <h1>Diagnose faster.<br><em>Think deeper.</em></h1>
+
+  <p class="hero-sub">
+    HealBot Pro turns a doctor's free-text description into a full structured consultation report in under 60 seconds — powered by a 4-step hybrid GraphRAG pipeline that traverses a live medical knowledge graph.
+  </p>
+
+  <div class="hero-btns">
+    <button class="btn-pri">Start a consultation</button>
+    <button class="btn-sec">Watch the demo →</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-n">284k</span><span class="stat-l">Medical vectors</span></div>
+    <div class="stat-item"><span class="stat-n">&lt;60s</span><span class="stat-l">Per report</span></div>
+    <div class="stat-item"><span class="stat-n">18k</span><span class="stat-l">Graph nodes</span></div>
+    <div class="stat-item"><span class="stat-n">4-step</span><span class="stat-l">AI pipeline</span></div>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-type" id="tt-type"></div>
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-conn" id="tt-conn"></div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#a78bfa"></div>Disease</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#fb923c"></div>Symptom</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#00d4aa"></div>Patient</div>
+</div>
+
+<div class="pipeline-strip">
+  <div class="pipe-step step-a">
+    <div class="pipe-num">01</div>
+    <div class="pipe-body">
+      <div class="pipe-title">Symptom extraction</div>
+      <div class="pipe-tech">LLaMA-3 · Groq</div>
+      <div class="pipe-desc">Free-text parsed into structured clinical entities</div>
+      <div class="pipe-accent"></div>
+    </div>
+  </div>
+  <div class="pipe-step step-b">
+    <div class="pipe-num">02</div>
+    <div class="pipe-body">
+      <div class="pipe-title">Graph traversal</div>
+      <div class="pipe-tech">Neo4j KG</div>
+      <div class="pipe-desc">Knowledge graph traversed for likely conditions</div>
+      <div class="pipe-accent"></div>
+    </div>
+  </div>
+  <div class="pipe-step step-c">
+    <div class="pipe-num">03</div>
+    <div class="pipe-body">
+      <div class="pipe-title">Medical RAG</div>
+      <div class="pipe-tech">Pinecone</div>
+      <div class="pipe-desc">Vector search retrieves clinical context</div>
+      <div class="pipe-accent"></div>
+    </div>
+  </div>
+  <div class="pipe-step step-d">
+    <div class="pipe-num">04</div>
+    <div class="pipe-body">
+      <div class="pipe-title">Report synthesis</div>
+      <div class="pipe-tech">LLaMA-3 70B</div>
+      <div class="pipe-desc">Full doctor's consultation report generated</div>
+      <div class="pipe-accent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('graph-canvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const ttType = document.getElementById('tt-type');
+const ttName = document.getElementById('tt-name');
+const ttConn = document.getElementById('tt-conn');
+
+let W, H;
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  placeNodes();
+}
+
+// ── NODE DEFINITIONS (as % of viewport) ──
+const nodeData = [
+  // Diseases
+  {id:'flu',       label:'Influenza',        type:'disease'},
+  {id:'viral',     label:'Viral Syndrome',   type:'disease'},
+  {id:'migraine',  label:'Migraine',         type:'disease'},
+  {id:'pneumonia', label:'Pneumonia',        type:'disease'},
+  {id:'anemia',    label:'Anemia',           type:'disease'},
+  {id:'hyper',     label:'Hypertension',     type:'disease'},
+  {id:'dehydr',    label:'Dehydration',      type:'disease'},
+  {id:'dengue',    label:'Dengue Fever',     type:'disease'},
+  {id:'typhoid',   label:'Typhoid',          type:'disease'},
+  {id:'covid',     label:'COVID-19',         type:'disease'},
+  // Symptoms
+  {id:'fever',     label:'Fever',            type:'symptom'},
+  {id:'headache',  label:'Headache',         type:'symptom'},
+  {id:'fatigue',   label:'Fatigue',          type:'symptom'},
+  {id:'cough',     label:'Cough',            type:'symptom'},
+  {id:'chestpain', label:'Chest pain',       type:'symptom'},
+  {id:'nausea',    label:'Nausea',           type:'symptom'},
+  {id:'dizziness', label:'Dizziness',        type:'symptom'},
+  {id:'sob',       label:'Breathlessness',   type:'symptom'},
+  {id:'pallor',    label:'Pallor',           type:'symptom'},
+  {id:'palpitation',label:'Palpitations',   type:'symptom'},
+  {id:'thirst',    label:'Thirst',           type:'symptom'},
+  {id:'rash',      label:'Rash',             type:'symptom'},
+  {id:'joinpain',  label:'Joint pain',       type:'symptom'},
+  {id:'vomit',     label:'Vomiting',         type:'symptom'},
+  {id:'appetite',  label:'Loss of appetite', type:'symptom'},
+  // Patients
+  {id:'pt1', label:'Sarah K.',   type:'patient'},
+  {id:'pt2', label:'Rahul M.',   type:'patient'},
+  {id:'pt3', label:'Priya D.',   type:'patient'},
+];
+
+const edgeData = [
+  // Flu
+  {s:'flu',t:'fever'},{s:'flu',t:'fatigue'},{s:'flu',t:'cough'},{s:'flu',t:'headache'},{s:'flu',t:'nausea'},
+  // Viral
+  {s:'viral',t:'fever'},{s:'viral',t:'fatigue'},{s:'viral',t:'headache'},{s:'viral',t:'nausea'},{s:'viral',t:'appetite'},
+  // Migraine
+  {s:'migraine',t:'headache'},{s:'migraine',t:'nausea'},{s:'migraine',t:'dizziness'},{s:'migraine',t:'vomit'},
+  // Pneumonia
+  {s:'pneumonia',t:'cough'},{s:'pneumonia',t:'fever'},{s:'pneumonia',t:'chestpain'},{s:'pneumonia',t:'sob'},{s:'pneumonia',t:'fatigue'},
+  // Anemia
+  {s:'anemia',t:'fatigue'},{s:'anemia',t:'pallor'},{s:'anemia',t:'palpitation'},{s:'anemia',t:'dizziness'},{s:'anemia',t:'sob'},
+  // Hypertension
+  {s:'hyper',t:'headache'},{s:'hyper',t:'dizziness'},{s:'hyper',t:'palpitation'},
+  // Dehydration
+  {s:'dehydr',t:'thirst'},{s:'dehydr',t:'dizziness'},{s:'dehydr',t:'fatigue'},{s:'dehydr',t:'headache'},
+  // Dengue
+  {s:'dengue',t:'fever'},{s:'dengue',t:'rash'},{s:'dengue',t:'joinpain'},{s:'dengue',t:'headache'},{s:'dengue',t:'fatigue'},
+  // Typhoid
+  {s:'typhoid',t:'fever'},{s:'typhoid',t:'appetite'},{s:'typhoid',t:'nausea'},{s:'typhoid',t:'fatigue'},{s:'typhoid',t:'vomit'},
+  // COVID
+  {s:'covid',t:'fever'},{s:'covid',t:'cough'},{s:'covid',t:'fatigue'},{s:'covid',t:'sob'},{s:'covid',t:'headache'},
+  // Patients
+  {s:'pt1',t:'fever'},{s:'pt1',t:'headache'},{s:'pt1',t:'fatigue'},
+  {s:'pt1',t:'viral',strength:0.9},{s:'pt1',t:'flu',strength:0.6},{s:'pt1',t:'dehydr',strength:0.55},
+  {s:'pt2',t:'cough'},{s:'pt2',t:'sob'},{s:'pt2',t:'fever'},
+  {s:'pt2',t:'pneumonia',strength:0.85},{s:'pt2',t:'covid',strength:0.7},
+  {s:'pt3',t:'headache'},{s:'pt3',t:'dizziness'},{s:'pt3',t:'palpitation'},
+  {s:'pt3',t:'hyper',strength:0.8},{s:'pt3',t:'anemia',strength:0.65},
+];
+
+// Pre-computed layout positions (fraction of W,H)
+const positions = {
+  flu:[0.12,0.28], viral:[0.28,0.16], migraine:[0.72,0.14], pneumonia:[0.08,0.54],
+  anemia:[0.38,0.62], hyper:[0.68,0.58], dehydr:[0.88,0.28], dengue:[0.5,0.1],
+  typhoid:[0.18,0.72], covid:[0.82,0.48],
+  fever:[0.32,0.32], headache:[0.52,0.24], fatigue:[0.22,0.44], cough:[0.14,0.38],
+  chestpain:[0.06,0.64], nausea:[0.42,0.46], dizziness:[0.62,0.36], sob:[0.24,0.62],
+  pallor:[0.46,0.72], palpitation:[0.60,0.70], thirst:[0.80,0.40], rash:[0.64,0.18],
+  joinpain:[0.76,0.26], vomit:[0.56,0.54], appetite:[0.36,0.78],
+  pt1:[0.38,0.86], pt2:[0.58,0.88], pt3:[0.20,0.86],
+};
+
+// Build node objects with physics
+const nodes = nodeData.map(n => ({
+  ...n,
+  x: 0, y: 0,
+  vx: (Math.random()-0.5)*0.3,
+  vy: (Math.random()-0.5)*0.3,
+  baseX: 0, baseY: 0,
+  r: n.type==='patient'?14 : n.type==='disease'?11:8,
+  alpha: 1,
+  glowPhase: Math.random()*Math.PI*2,
+}));
+
+const nodeMap = {};
+nodes.forEach(n=>nodeMap[n.id]=n);
+
+const edges = edgeData.map(e=>({...e, pulse:Math.random(), pulseSpeed:0.004+Math.random()*0.004, active:false}));
+
+function placeNodes(){
+  nodes.forEach(n=>{
+    const pos = positions[n.id];
+    if(pos){
+      n.baseX = pos[0]*W;
+      n.baseY = pos[1]*H;
+      if(n.x===0&&n.y===0){ n.x=n.baseX; n.y=n.baseY; }
+    }
+  });
+}
+
+function nodeColor(type){
+  if(type==='disease') return '#a78bfa';
+  if(type==='symptom') return '#fb923c';
+  return '#00d4aa';
+}
+function nodeRgb(type){
+  if(type==='disease') return '167,139,250';
+  if(type==='symptom') return '251,146,60';
+  return '0,212,170';
+}
+
+let hoveredNode = null;
+let mouse = {x:-9999,y:-9999};
+
+function getConnectedIds(nodeId){
+  const ids = new Set();
+  edges.forEach(e=>{
+    if(e.s===nodeId) ids.add(e.t);
+    if(e.t===nodeId) ids.add(e.s);
+  });
+  return ids;
+}
+function isEdgeConnected(e, nodeId){
+  return e.s===nodeId||e.t===nodeId;
+}
+
+// ── TRAVERSAL ANIMATION ──
+let traversalActive = false;
+let traversalEdges = [];
+let traversalQueue = [];
+let traversalTick = 0;
+
+function triggerTraversal(){
+  if(traversalActive) return;
+  traversalActive = true;
+  traversalEdges = [];
+  traversalQueue = [];
+  traversalTick = 0;
+
+  // Start from a random patient
+  const pts = nodes.filter(n=>n.type==='patient');
+  const startNode = pts[Math.floor(Math.random()*pts.length)];
+
+  // Layer 1: patient → symptoms/diseases
+  const layer1 = edges.filter(e=>e.s===startNode.id||e.t===startNode.id);
+  layer1.forEach((e,i)=>traversalQueue.push({edge:e, delay:i*80}));
+
+  // Layer 2: symptoms → diseases
+  setTimeout(()=>{
+    const visited = new Set(layer1.map(e=>e.s===startNode.id?e.t:e.s));
+    visited.forEach(id=>{
+      const hops = edges.filter(e=>(e.s===id||e.t===id)&&e.s!==startNode.id&&e.t!==startNode.id);
+      hops.forEach((e,i)=>{ if(!traversalEdges.includes(e)) traversalQueue.push({edge:e,delay:i*50}); });
+    });
+  }, 800);
+
+  setTimeout(()=>{ traversalActive=false; traversalEdges=[]; }, 4500);
+}
+
+setInterval(triggerTraversal, 5500);
+setTimeout(triggerTraversal, 600);
+
+function drawEdge(e){
+  const s = nodeMap[e.s], t = nodeMap[e.t];
+  if(!s||!t) return;
+
+  const isHovConnected = hoveredNode && isEdgeConnected(e, hoveredNode.id);
+  const isTraversing = traversalEdges.includes(e);
+
+  if(isHovConnected){
+    const rgb = nodeRgb(s.type);
+    ctx.beginPath();
+    ctx.moveTo(s.x,s.y); ctx.lineTo(t.x,t.y);
+    ctx.strokeStyle=`rgba(${rgb},0.55)`;
+    ctx.lineWidth=1.4;
+    ctx.stroke();
+    // travelling dot
+    const px=s.x+(t.x-s.x)*e.pulse, py=s.y+(t.y-s.y)*e.pulse;
+    ctx.beginPath(); ctx.arc(px,py,2.8,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${rgb},1)`; ctx.fill();
+  } else if(isTraversing){
+    const rgb = nodeRgb(s.type);
+    ctx.beginPath();
+    ctx.moveTo(s.x,s.y); ctx.lineTo(t.x,t.y);
+    ctx.strokeStyle=`rgba(${rgb},0.3)`;
+    ctx.lineWidth=0.9;
+    ctx.stroke();
+    const px=s.x+(t.x-s.x)*e.pulse, py=s.y+(t.y-s.y)*e.pulse;
+    ctx.beginPath(); ctx.arc(px,py,2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${rgb},0.8)`; ctx.fill();
+  } else {
+    const dim = hoveredNode ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.055)';
+    ctx.beginPath();
+    ctx.moveTo(s.x,s.y); ctx.lineTo(t.x,t.y);
+    ctx.strokeStyle=dim;
+    ctx.lineWidth=0.5;
+    ctx.stroke();
+  }
+}
+
+function drawNode(n){
+  const isHov = hoveredNode && hoveredNode.id===n.id;
+  const isConn = hoveredNode && getConnectedIds(hoveredNode.id).has(n.id);
+  const isDimmed = hoveredNode && !isHov && !isConn;
+
+  const col = nodeColor(n.type);
+  const rgb = nodeRgb(n.type);
+  const r = n.r + (isHov?4:0);
+  const glow = 0.5+0.5*Math.sin(n.glowPhase);
+  const baseAlpha = isDimmed ? 0.2 : 1;
+
+  // outer glow ring
+  if(!isDimmed){
+    ctx.beginPath(); ctx.arc(n.x,n.y,r+8,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(${rgb},${(isHov?0.25:0.06)*glow})`;
+    ctx.lineWidth=isHov?3:1.5; ctx.stroke();
+  }
+
+  // main circle fill
+  ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+  ctx.fillStyle=`rgba(${rgb},${isDimmed?0.06:0.12})`; ctx.fill();
+
+  // border
+  ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(${rgb},${isDimmed?0.15:isHov?0.95:0.55})`;
+  ctx.lineWidth=isHov?1.8:1; ctx.stroke();
+
+  // inner dot
+  ctx.beginPath(); ctx.arc(n.x,n.y,r*0.38,0,Math.PI*2);
+  ctx.fillStyle=`rgba(${rgb},${isDimmed?0.1:isHov?0.9:0.5})`; ctx.fill();
+
+  // patient pulse rings
+  if(n.type==='patient' && !isDimmed){
+    const pr = r+14+glow*6;
+    ctx.beginPath(); ctx.arc(n.x,n.y,pr,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(${rgb},${0.08*glow})`; ctx.lineWidth=1; ctx.stroke();
+  }
+}
+
+function drawLabel(n){
+  const isHov = hoveredNode && hoveredNode.id===n.id;
+  const isConn = hoveredNode && getConnectedIds(hoveredNode.id).has(n.id);
+  if(!isHov && !isConn) return;
+
+  const rgb = nodeRgb(n.type);
+  const r = n.r + (isHov?4:0);
+  ctx.font = `${isHov?'600':'400'} 11px 'Space Grotesk',sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillStyle=`rgba(${rgb},${isHov?1:0.7})`;
+  ctx.fillText(n.label, n.x, n.y+r+5);
+}
+
+let lastTime = 0;
+function animate(ts){
+  const dt = Math.min(ts-lastTime, 32);
+  lastTime = ts;
+  ctx.clearRect(0,0,W,H);
+
+  // gentle float
+  nodes.forEach(n=>{
+    n.glowPhase += 0.012;
+    n.x += Math.sin(n.glowPhase*0.3)*0.12;
+    n.y += Math.cos(n.glowPhase*0.25)*0.1;
+  });
+
+  // advance pulses
+  edges.forEach(e=>{ e.pulse=(e.pulse+e.pulseSpeed)%1; });
+
+  // process traversal queue
+  traversalQueue.forEach((item,i)=>{
+    item.delay -= 16;
+    if(item.delay<=0 && !traversalEdges.includes(item.edge)){
+      traversalEdges.push(item.edge);
+    }
+  });
+  traversalQueue = traversalQueue.filter(item=>item.delay>0||traversalEdges.includes(item.edge));
+
+  edges.forEach(drawEdge);
+  nodes.forEach(drawNode);
+  nodes.forEach(drawLabel);
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// ── INTERACTION ──
+function getNodeAt(mx,my){
+  return nodes.find(n=>Math.hypot(n.x-mx,n.y-my)<=n.r+10)||null;
+}
+
+document.addEventListener('mousemove',e=>{
+  mouse.x=e.clientX; mouse.y=e.clientY;
+  const n = getNodeAt(e.clientX, e.clientY);
+  hoveredNode = n;
+  canvas.style.cursor = n?'pointer':'default';
+
+  if(n){
+    const connCount = edges.filter(ed=>ed.s===n.id||ed.t===n.id).length;
+    const typeLabel = n.type==='disease'?'Disease':'n.type'==='symptom'?'Symptom':'Patient';
+    const tl = n.type==='disease'?'Disease node':n.type==='symptom'?'Symptom node':'Patient node';
+    ttType.textContent=tl; ttType.style.color=nodeColor(n.type);
+    ttName.textContent=n.label;
+    ttConn.textContent=`${connCount} connection${connCount!==1?'s':''}`;
+    let lx=e.clientX+16, ly=e.clientY-56;
+    if(lx+160>W) lx=e.clientX-174;
+    if(ly<0) ly=e.clientY+14;
+    tooltip.style.left=lx+'px'; tooltip.style.top=ly+'px'; tooltip.style.opacity='1';
+  } else {
+    tooltip.style.opacity='0';
+  }
+});
+document.addEventListener('mouseleave',()=>{ hoveredNode=null; tooltip.style.opacity='0'; });
+
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>
